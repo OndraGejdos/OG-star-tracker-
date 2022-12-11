@@ -1,0 +1,19 @@
+OG star tracker mini
+Print everything at 100% infil.
+except 
+large pulley you can use 50% infil
+ball head holder you can use 50% infil
+between part you can use 50% infil
+stationary part you can use 50% infil
+You can use 0,6mm nozle.
+Use pla for printing.
+Parts are oriented in printing positon.
+use support only on this parts
+worm overhang angle 80°
+main part overhang angle 80°
+attachment for slider overhang angle standart for your slicer
+if you think i have mised something message me.
+
+Clear skies! 
+
+CC BY-NC-SA 
