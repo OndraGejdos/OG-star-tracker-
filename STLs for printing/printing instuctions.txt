@@ -10,7 +10,7 @@ Use pla for printing.
 Parts are oriented in printing positon.
 use support only on this parts
 main part overhang angle 80°
-attachment for slider overhang angle standart for your slicer
+print m5 bolt cap twice
 if you think i have mised something message me.
 Soon i will upload part botom main part for peoples living below 20°.
 
