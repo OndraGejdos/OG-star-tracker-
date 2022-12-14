@@ -9,7 +9,6 @@ You can use 0,6mm nozle.
 Use pla for printing.
 Parts are oriented in printing positon.
 use support only on this parts
-worm overhang angle 80°
 main part overhang angle 80°
 attachment for slider overhang angle standart for your slicer
 if you think i have mised something message me.
