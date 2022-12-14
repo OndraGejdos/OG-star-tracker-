@@ -1,0 +1,2 @@
+step pin 3 dir pin 4 
+I will upload firmware for arduino uno later.
