@@ -11,8 +11,12 @@ stationary part you can use 50% infil
 
 for main part use supports. support overhang angle is 80°
 stls that have on the end 2x needs to be printed twice
-if you are confused look at 3d model
+if you are confused look at 3d model : 
 if you dont have m5 threaded inserts use stls that have in name with thread
+For now dont print top cover becaose the software is no ready yet.
+If you dont want to have intervalometr print top cover without display. 
+Software would be hopefuly ready in few days.
+Dont forget that this is still beta.
 
 You can use 0,6mm nozle.
 Use pla for printing.
