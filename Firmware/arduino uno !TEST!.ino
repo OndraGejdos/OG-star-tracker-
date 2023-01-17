@@ -37,7 +37,8 @@ int read_LCD_buttons()
    if (adc_key_in < 790)  return btnSELECT; // Select pressed 
    return btnNONE;  // If no valid response return No button pressed
 } 
-int stateofkey  = btnSELECT;
+const unsigned long eventInterval = 500;
+unsigned long previousTime = 0;
 byte blank[8] = {
   0b11111,
   0b11111,
@@ -63,8 +64,6 @@ timer1_compare_match = 33226;
 TCNT1 = timer1_compare_match;
 TCCR1B |= (1 << CS11) | (1 << CS10); // set prescaler to 64
 TIMSK1 |= (1 << OCIE1A);
-PCICR |= B00000010; //set interupt on port B
-PCMSK1 |= B00000001; // set to port A0
 interrupts();
 lcd.begin(16, 2);
 lcd.createChar(1, blank);
@@ -75,10 +74,6 @@ lcd.print("V1 Clear sky!");
 delay(3000);
 lcd.write(byte(0));
 lcd.clear();
-lcd.setCursor(3,0);
-lcd.print("Dithering");
-lcd.setCursor(5,1);
-lcd.print("YES NO ");
 }
 int get_number(int x, int y) //funciton for displaying number on screen and returnig entered number int x and y is for position on display
 {
@@ -89,12 +84,14 @@ int get_number(int x, int y) //funciton for displaying number on screen and retu
   const int hh = x +1 ;
   const int xx = x + 2 ;
   bool tax = false;
+  int pds = 0;
   do{
     lcd.setCursor(gg,y); // print positions where would be numbers displayed
     lcd.print(s);
     lcd.print(p);
     lcd.print(d);
-    switch(stateofkey)
+    pds = read_LCD_buttons();
+    switch(pds)
     {
       case btnRIGHT :{
       x = x + 1 ;
@@ -145,73 +142,106 @@ int get_number(int x, int y) //funciton for displaying number on screen and retu
     if(x > xx || x  < gg){x = gg;}
   }while( tax != true );
 }
-void loop(){
-  switch(stateofkey){
-    case btnLEFT:{
-
+void exp(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter expousure");
+  lcd.setCursor(0,1);
+  lcd.print("lenght :     S"); 
+  delay(1000);
+  int leng = get_number(9,1);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter number of");
+  lcd.setCursor(0,1);
+  lcd.print("exposures : "); 
+  delay(1000);
+  int exp = get_number(12,1);
+  lcd.setCursor(0,0);
+  lcd.clear();
+  lcd.setCursor(3,0);
+  lcd.print("TRACKING");
+  lcd.setCursor(0,1);
+  lcd.print("EXPOSURE : ");
+  int exp_amount = 0;
+  exp_amount = leng / 0.26582 ;
+  int l = 0;
+  while(true){
+    i = i +1;
+    if(i == exp_amount){
+      digitalWrite(Cam,HIGH);
+      delay(leng);
+      digitalWrite(Cam,LOW);
+      delay(500);
+      lcd.setCursor(11,1);
+      l = l + 1;
+      lcd.print(l);
+      i = 0;
     }
-    case btnRIGHT:{
-      do{
-      lcd.setCursor(9,1);
-      lcd.write(1);
-      lcd.setCursor(10,1);
-      lcd.write(1);
-      delay(300);
-      lcd.setCursor(9,1);
-      lcd.print("NO");
-      delay(300);
-      }while()
-      Serial.print(stateofkey);
-      if(stateofkey == btnSELECT)
-      {
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Enter expousure");
-        lcd.setCursor(0,1);
-        lcd.print("lenght :     S"); 
-        delay(500);
-        int leng = get_number(9,1);
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Enter number of");
-        lcd.setCursor(0,1);
-        lcd.print("exposures : "); 
-        delay(500);
-        int exp = get_number(12,1);
-        lcd.setCursor(0,0);
-        lcd.clear();
-        lcd.setCursor(3,0);
-        lcd.print("TRACKING");
-        lcd.setCursor(0,1);
-        lcd.print("EXPOSURE : ");
-        int exp_amount = 0;
-        exp_amount = leng / 0.26582 ;
-        int l = 0;
-        while(true){
-          i = i +1;
-          if(i == exp_amount){
-            digitalWrite(Cam,HIGH);
-            delay(leng);
-            digitalWrite(Cam,LOW);
-            delay(500);
-            lcd.setCursor(11,1);
-            l = l + 1;
-            lcd.print(l);
-            i = 0;
-          }
-          if(l == exp){
-            lcd.setCursor(0,1);
-            lcd.print("     DONE     ");
-          }
-          
-        }
-      }
-      else {break;}   
+    if(l == exp){
+      lcd.setCursor(0,1);
+      lcd.print("     DONE     ");
     }
+    
   }
 }
 
-ISR (PCINT1_vect){ // interrupt for port c
-  stateofkey = read_LCD_buttons(); // read curent state of button and stores it in to global variable
-  Serial.print(stateofkey);
+void loop(){
+  int la = 0;
+  String stringArray[2] = {"Set Exposure", "Dithering"};
+  int menuItem = 0;
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Menu item");
+  lcd.setCursor(0,1);
+  lcd.print(stringArray[0]);
+  int button = 5;
+  int buttong = 5;
+  while(true){
+    button =  read_LCD_buttons();
+    Serial.println(button);
+    Serial.println("AHOJ");
+    switch(button){
+      case btnUP : {
+        lcd.setCursor(0,1);
+        la = la + 1;
+        if (la > 1){
+          la = 0;        
+        lcd.print(stringArray[la]);
+        }
+        while(true){
+          buttong =  read_LCD_buttons();
+          switch(buttong){
+            case btnSELECT :{
+              exp();
+              break;
+            }
+            case btnRIGHT :{
+              break;
+            }
+          }
+          break;
+        }
+      }
+      case btnDOWN : {
+        lcd.setCursor(0,1);
+        la = la + 1;
+        if (la > 1){
+          la = 0;        
+        lcd.print(stringArray[la]);
+        }
+      }
+      case btnNONE : {
+        break;
+      }
+      case btnSELECT :{
+        if (la == 0);{
+          exp();
+        }
+        if (la == 1){
+          break;
+        }
+      }
+    }
+  }
 }
