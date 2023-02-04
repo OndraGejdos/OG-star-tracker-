@@ -1,8 +1,6 @@
 const int EN=2;         //ENABLE PIN
 const int Step=3;       // STEP PIN
 const int dir=4;        // DIRECTION PIN
-#define button 11 ;
-boolean buttonState;
 void setup()
 {
 pinMode(EN,OUTPUT);     // ENABLE AS OUTPUT
@@ -23,4 +21,3 @@ delay(66,455);                   // WAIT
 
 
 }
-for(int )
