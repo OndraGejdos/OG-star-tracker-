@@ -6,14 +6,14 @@ void setup()
 pinMode(EN,OUTPUT);     // ENABLE AS OUTPUT
 pinMode(dir,OUTPUT);    // DIRECTION AS OUTPUT
 pinMode(Step,OUTPUT);   // STEP AS OUTPUT
-digitalWrite(dir,LOW);
+digitalWrite(dir,HIGH);
 }
 void loop()
 {
 
 
 digitalWrite(dir,LOW);
-digitalWrite(Step,LOW);    // STEP HIGH
+digitalWrite(Step,HIGH);    // STEP HIGH
 delay(66.455 );                   // WAIT
 digitalWrite(Step,HIGH);     // STEP LOW
 delay(66.455);                   // WAIT
