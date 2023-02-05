@@ -8,14 +8,14 @@ void setup()
 pinMode(EN,OUTPUT);     // ENABLE AS OUTPUT
 pinMode(dir,OUTPUT);    // DIRECTION AS OUTPUT
 pinMode(Step,OUTPUT);   // STEP AS OUTPUT
-digitalWrite(dir,LOW);
+digitalWrite(dir,HIGH);
 pinMode(button,INPUT_PULLUP);
 }
 void loop()
 {
 
 buttonState = digitalRead(button)
-digitalWrite(dir,LOW);
+digitalWrite(dir,HIGH);
 digitalWrite(Step,LOW);    // STEP HIGH
 delay(132.91 );                   // WAIT
 digitalWrite(Step,HIGH);     // STEP LOW
