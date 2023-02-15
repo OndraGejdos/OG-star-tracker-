@@ -12,10 +12,10 @@ void loop()
 {
 
 
-digitalWrite(dir,LOW);
+digitalWrite(dir,HIGH);
 digitalWrite(Step,HIGH);    // STEP HIGH
 delay(66.455 );                   // WAIT
-digitalWrite(Step,HIGH);     // STEP LOW
+digitalWrite(Step,LOW);     // STEP LOW
 delay(66.455);                   // WAIT
 
 
