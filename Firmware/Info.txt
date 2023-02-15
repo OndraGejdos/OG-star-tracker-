@@ -1,2 +1,2 @@
 step pin A3 dir pin D4 
-I will upload firmware for arduino uno later.
+if you want to use it in south hemisphere change dir from HIGH to LOW
