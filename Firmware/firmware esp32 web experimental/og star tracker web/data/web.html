@@ -1,0 +1,45 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Og Star Tracker</title>
+    <link rel="stylesheet" type="text/css" href="webstyle.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="theTop">
+        <h1>Og Star tracker</h1>
+    </div>
+    <div class="speed">
+        <h3>Select tracking speed</h3>
+        <select id="tracking-speed">
+            <option value="sideral">Sideral</option>
+            <option value="lunar">Lunar</option>
+            <option value="custom">Custom</option>
+        </select>
+        <input type="number" id="speed-input" name="speed-input" min="0" max="2" step="0.1"><br><br><br>
+        <label for="num-exposures">Number of exposures</label> <br><br>
+        <input type="number" id="num-exposures" name="num-exposures" min="1"> <br><br>
+        <label for="exposure-length">Exposure lenght</label> <br><br>
+        <input type="number" id="exposure-length" name="exposure-length" min="1" max="600"> <br><br>
+        <button id="Run">Run</button>
+        <p>CameraState: <span id="motor-state">Not taking exposures</span></p>
+      <label for="slewing-speed">Slewing Speed:</label><br><br>
+      <input type="number" id="slewing-speed" name="slewing-speed" min="1" max="10"><br><br>
+      <button id="move-left">&#x2190;</button>
+      <button id="move-right">&#x2192;</button>
+    <script src="script.js"></script>
+    <script>
+      var customSpeedDiv = document.getElementById("custom-speed");
+      var trackingSpeedSelect = document.getElementById("tracking-speed");
+      trackingSpeedSelect.addEventListener("change", function() {
+        if (trackingSpeedSelect.value === "custom") {
+          customSpeedDiv.style.display = "block";
+        } else {
+          customSpeedDiv.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
