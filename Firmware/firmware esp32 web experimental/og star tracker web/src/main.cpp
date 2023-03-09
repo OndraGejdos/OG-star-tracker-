@@ -69,6 +69,7 @@ void setup() {
   });
   server.serveStatic("/", SPIFFS, "/");
   webSocket.begin();
+  server.begin();
   webSocket.onEvent(webSocketEvent);
 }
 
