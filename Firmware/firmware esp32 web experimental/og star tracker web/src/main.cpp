@@ -7,8 +7,8 @@
 #include <WifiAP.h>
 #define dir 13 
 #define sptep 14 
-const char* ssid = "o-2";
-const char* password = "#PGHF273";
+const char* ssid = "ssid";
+const char* password = "#pasword";
 AsyncWebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81); 
 StaticJsonDocument<200> send;
