@@ -1,78 +1,84 @@
-#include <Arduino.h> 
-#include <WebSocketsServer.h>    
-#include <WiFi.h>
-#include "SPIFFS.h"
-#include <ArduinoJson.h>
-#include <ESPAsyncWebServer.h>
-#include <WifiAP.h>
-#define dir 13 
-#define sptep 14 
-const char* ssid = "ssid";
-const char* password = "#pasword";
-AsyncWebServer server(80);
-WebSocketsServer webSocket = WebSocketsServer(81); 
-StaticJsonDocument<200> send;
-StaticJsonDocument<200> rec;
-bool newRequest = false;
-void initSPIFFS() { //  initializes the ESP32 Filesystem
-  if (!SPIFFS.begin(true)) {
-    Serial.println("An error has occurred while mounting SPIFFS");
-  }
-  else{
-    Serial.println("SPIFFS mounted successfully");
-  }
-}
-void initWiFi() { //function initializes WiFi
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi ..");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
-    delay(1000);
-  }
-  Serial.println(WiFi.localIP());
-}
-void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length) {      // the parameters of this callback function are always the same -> num: id of the client who send the event, type: type of message, payload: actual data sent and length: length of payload
-  switch (type) {                                     // switch on the type of information sent
-    case WStype_DISCONNECTED:                         // if a client is disconnected, then type == WStype_DISCONNECTED
-      Serial.println("Client " + String(num) + " disconnected");
-      break;
-    case WStype_CONNECTED:                            // if a client is connected, then type == WStype_CONNECTED
-      Serial.println("Client " + String(num) + " connected");
-      // optionally you can add code here what to do when connected
-      break;
-    case WStype_TEXT:                                 // if a client has sent data, then type == WStype_TEXT
-      // try to decipher the JSON string received
-      StaticJsonDocument<200> rec;                    // create a JSON container
-      DeserializationError error = deserializeJson(rec, payload);
-      if (error) {
-        Serial.print(F("deserializeJson() failed: "));
-        Serial.println(error.f_str());
-        return;
-      }
-      else {
-        // JSON string was received correctly, so information can be retrieved:
-        int Exposure = rec["exposures"];
-        int Lenght = rec["lenght"];
-        Serial.println(Lenght);
-        Serial.println(Exposure);
-      }
-  break;
-  }
-}
-void setup() {
-  Serial.begin(115200);
-  initWiFi();
-  initSPIFFS();
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/web.html", "text/html");
+document.getElementById('Run').addEventListener('click', cameras);
+document.getElementById('save-button').addEventListener('click', custom_speeds);
+document.getElementById('Select_hemisphere').addEventListener('change', hemispherer);
+document.getElementById('slewing-speed').addEventListener('submit', hemispherer);
+const gateway = `ws://${window.location.hostname}/ws`;
+let webSocket; // Declare webSocket as a global variable
+isopen = false ;
+function connectToWebSocket() {
+  webSocket = new WebSocket(gateway);
+
+  webSocket.addEventListener('open', function (event) {
+    console.log('WebSocket connection opened');
+    isopen = true ;
   });
-  server.serveStatic("/", SPIFFS, "/");
-  webSocket.begin();
-  server.begin();
-  webSocket.onEvent(webSocketEvent);
+
+  webSocket.addEventListener('message', function (event) {
+    console.log('Received message:', event.data);
+  });
+
+  webSocket.addEventListener('close', function (event) {
+    console.log('WebSocket connection closed');
+  });
+
+  webSocket.addEventListener('error', function (event) {
+    console.error('WebSocket error:', event);
+  });
+
+  return webSocket;
+}
+NS = false;
+moveright = false;
+hemisphere = document.getElementById('Select_hemisphere');
+hemisphere.addEventListener("change", () =>{
+  if  (hemisphere.value = "north") {
+    NS = true;
+  }
+  else {
+    NS = false;
+  }
+})
+function slew(){
+  const slewing = {
+    slewe : document.getElementById('slewing-speed').value,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(slewing))
+  }
+}
+function right(){
+
+  const right_move ={
+    righton : moveright,
+  }
+
+}
+function cameras(){
+  const camera = {
+    exposures: document.getElementById('num-exposures').value,
+    length: document.getElementById('exposure-length').value,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(camera))
+  }
+}
+function custom_speeds(){
+  const custom_speed = {
+    speed : document.getElementById("option-input").value,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(custom_speed));
+  }
+}
+function hemispherer(){
+  const hem = {
+    hemisphereNS : NS,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(hem));
+  }
+}
+window.onload = function(event) {
+  connectToWebSocket();
 }
 
-void loop() {
-  webSocket.loop();                                   // Update function for the webSockets 
-}
