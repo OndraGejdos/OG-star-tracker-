@@ -13,33 +13,33 @@
     </div>
     <div class="speed">
         <h3>Select tracking speed</h3>
+
         <select id="tracking-speed">
             <option value="sideral">Sideral</option>
-            <option value="lunar">Lunar</option>
             <option value="custom">Custom</option>
-        </select>
-        <input type="number" id="speed-input" name="speed-input" min="0" max="2" step="0.1"><br><br><br>
+        </select><br><br>
+        <div id="input-container" style="display: none;">
+          <label for="option-input">Enter a value:</label><br><br>
+          <input type="number" id="option-input"  min="0" max="2">
+          <button id="save-button">Save</button>
+        </div>
         <label for="num-exposures">Number of exposures</label> <br><br>
         <input type="number" id="num-exposures" name="num-exposures" min="1"> <br><br>
-        <label for="exposure-length">Exposure lenght</label> <br><br>
+        <label for="exposure-length">Exposure lenght (S)</label> <br><br>
         <input type="number" id="exposure-length" name="exposure-length" min="1" max="600"> <br><br>
         <button id="Run">Run</button>
-        <p>CameraState: <span id="motor-state">Not taking exposures</span></p>
-      <label for="slewing-speed">Slewing Speed:</label><br><br>
+        <p>CameraState <br><br> <span id="motor-state">Not taking exposures</span></p>
+      <label for="slewing-speed">Slewing sped</label><br><br>
       <input type="number" id="slewing-speed" name="slewing-speed" min="1" max="10"><br><br>
       <button id="move-left">&#x2190;</button>
-      <button id="move-right">&#x2192;</button>
+      <button id="move-right">&#x2192;</button><br><br>
+      <select id="Select_hemisphere">
+        <option value="North">Northern Hemisphere</option>
+        <option value="South">Southern Hemisphere</option>
+      </select>
+    </div>
+    <script src = "select.js"></script>
     <script src="script.js"></script>
-    <script>
-      var customSpeedDiv = document.getElementById("custom-speed");
-      var trackingSpeedSelect = document.getElementById("tracking-speed");
-      trackingSpeedSelect.addEventListener("change", function() {
-        if (trackingSpeedSelect.value === "custom") {
-          customSpeedDiv.style.display = "block";
-        } else {
-          customSpeedDiv.style.display = "none";
-        }
-      });
-    </script>
   </body>
 </html>
+
