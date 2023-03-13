@@ -1,7 +1,10 @@
 document.getElementById('Run').addEventListener('click', cameras);
 document.getElementById('save-button').addEventListener('click', custom_speeds);
 document.getElementById('Select_hemisphere').addEventListener('change', hemispherer);
-document.getElementById('slewing-speed').addEventListener('submit', hemispherer);
+document.getElementById('slewing-speed').addEventListener('keypress', slew);
+document.getElementById('move-left').addEventListener('mousedown', left);
+document.getElementById('move-right').addEventListener('mousedown', right);
+document.getElementById('move-left'||'move-right').addEventListener('mouseup', reelease);
 const gateway = `ws://${window.location.hostname}/ws`;
 let webSocket; // Declare webSocket as a global variable
 isopen = false ;
@@ -28,7 +31,9 @@ function connectToWebSocket() {
   return webSocket;
 }
 NS = false;
-moveright = false;
+moveright = true;
+moveleft = true ;
+releas = true;
 hemisphere = document.getElementById('Select_hemisphere');
 hemisphere.addEventListener("change", () =>{
   if  (hemisphere.value = "north") {
@@ -38,20 +43,41 @@ hemisphere.addEventListener("change", () =>{
     NS = false;
   }
 })
+function reelease(){
+  const isreleas = {
+    meybe : releas,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(isreleas))
+    console.log('slew speed sent');
+  }
+}
 function slew(){
   const slewing = {
     slewe : document.getElementById('slewing-speed').value,
   };
   if (isopen = true) {
     webSocket.send(JSON.stringify(slewing))
+    console.log('slew speed sent');
   }
 }
 function right(){
-
   const right_move ={
     righton : moveright,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(right_move))
+    console.log('right move sent');
   }
-
+}
+function left(){
+  const left_move ={
+    lefton : moveleft,
+  };
+  if (isopen = true) {
+    webSocket.send(JSON.stringify(left_move))
+    console.log('left move sent');
+  }
 }
 function cameras(){
   const camera = {
