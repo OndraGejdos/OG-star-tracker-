@@ -14,9 +14,9 @@ void loop()
 
 digitalWrite(dir,HIGH);
 digitalWrite(Step,HIGH);    // STEP HIGH
-delay(66,48 );                   // WAIT
+delay(66.48 );                   // WAIT
 digitalWrite(Step,LOW);     // STEP LOW
-delay(66,48);                   // WAIT
+delay(66.48);                   // WAIT
 
 
 }
