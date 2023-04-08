@@ -1,2 +1,0 @@
-step pin A3 dir pin D4 
-if you want to use it in south hemisphere change dir from HIGH to LOW
