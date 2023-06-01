@@ -3,7 +3,7 @@
 #include <DNSServer.h>
 #include <string.h>
 #include <esp_wifi.h>
-#include "og_config.h"
+#include "config.h"
 
 // Set your Wi-Fi credentials
 const byte DNS_PORT = 53;
