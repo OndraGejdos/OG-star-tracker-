@@ -42,4 +42,4 @@ Below is list of all parts if you want to assemble it yourself.
 - Use female header pins to mount the TCM2209 drivers and the ESP32 so that they can be replaced easily
 - The capacitors underneath the TMC2209 drivers need to be bent by 90-degree and rest on the PCB horizontally as shown:
 ![img2](./img/cap.png)
-- Keep the LED at sufficient height so that they can poke through the holes in the PCB enclosure
+- Keep the LED at sufficient height so that they can poke through the holes in top surface of the PCB enclosure
