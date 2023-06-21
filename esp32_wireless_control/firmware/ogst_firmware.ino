@@ -7,10 +7,10 @@
 
 // Set your Wi-Fi credentials
 const byte DNS_PORT = 53;
-const char* ssid = "OGST_V2";      //change to your SSID
-const char* password = "12345678";        //change to your password, must be 8+ characters
+const char* ssid = "OG star tracker";      //change to your SSID
+const char* password = "";        //change to your password, must be 8+ characters
 //If you are using AP mode, you can access the website using the below URL
-const String website_name = "www.OGST.com";
+const String website_name = "www.tracker.com";
 
 //Time b/w two rising edges should be 133.3333 ms
 //66.666x2  ms
