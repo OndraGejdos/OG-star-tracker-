@@ -5,7 +5,7 @@ up to 300mm and 2.5kg. It's also upgradable which means that you can add a anoth
 
 - [3D Model](https://a360.co/3UP3xk3)
 - [List of parts](https://docs.google.com/spreadsheets/d/1kcgIab0JqNLg5WMselIyCQLZJsu3P-vXLvSJgl1yHa8)
-- [Assembly video](https://youtu.be/pRuXy7Ffp4g)
+- [Assembly video](https://www.youtube.com/watch?v=97YKJrmOWHY)
 
 I plan on selling it in future for around 150$. There is a [discord](https://discord.gg/dyFKm79gKJ) for those who are
 interested or would want to ask me a few questions. New STLs are
