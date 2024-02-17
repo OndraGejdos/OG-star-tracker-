@@ -7,7 +7,7 @@
 
 // Set your Wi-Fi credentials
 const byte DNS_PORT = 53;
-const char* ssid = "OG star tracker";      //change to your SSID
+const char* ssid = "OG Star Tracker";      //change to your SSID
 const char* password = "";        //change to your password, must be 8+ characters
 //If you are using AP mode, you can access the website using the below URL
 const String website_name = "www.tracker.com";
@@ -15,11 +15,14 @@ const String website_name = "www.tracker.com";
 //Time b/w two rising edges should be 133.3333 ms
 //66.666x2  ms
 //sidereal rate = 0.00416 deg/s
+//for 80Mhz APB (TIMER frequency)
 #ifdef STEPPER_0_9
 const uint64_t c_SIDEREAL_PERIOD = 2666666;
+const uint32_t c_SLEW_SPEED = SLEW_SPEED;
+//const uint64_t c_SIDEREAL_PERIOD = 12500;
 #else
 const uint64_t c_SIDEREAL_PERIOD = 5333333;
-c_SLEW_SPEED = c_SLEW_SPEED / 2;
+const uint32_t c_SLEW_SPEED = SLEW_SPEED / 2;
 #endif
 
 int slew_speed = 0, num_exp = 0, len_exp = 0;
