@@ -2,8 +2,6 @@
 
 Is a fully 3d printed upgradable star tracker that you can make for 60$, I have been working on it for the past two years. It can handle
 up to 300mm and 2.5kg. It's also upgradable which means that you can add a another axis which would allow you to use go-to.Don't hesitate to ask me. 
-
-- [3D Model](https://a360.co/3UP3xk3)
 - [List of parts](https://docs.google.com/spreadsheets/d/1kcgIab0JqNLg5WMselIyCQLZJsu3P-vXLvSJgl1yHa8)
 - [Assembly video](https://www.youtube.com/watch?v=97YKJrmOWHY)
 
