@@ -6,6 +6,9 @@
 #include <EEPROM.h>
 #include "config.h"
 
+// 3.7.2024
+const int firmware_version = 2;
+
 // Set your Wi-Fi credentials
 const byte DNS_PORT = 53;
 const char* ssid = "OG Star Tracker";  //change to your SSID
@@ -13,6 +16,10 @@ const char* password = "password123";    //change to your password, must be 8+ c
 //If you are using AP mode, you can access the website using the below URL
 const String website_name = "www.tracker.com";
 const int dither_intensity = 5;
+
+const String tracking_on = "Tracking ON";
+const String tracking_off = "Tracking OFF";
+
 //Time b/w two rising edges should be 133.3333 ms
 //66.666x2  ms
 //sidereal rate = 0.00416 deg/s
@@ -38,7 +45,7 @@ enum interv_states { ACTIVE,
                      DELAY,
                      DITHER,
                      INACTIVE };
-volatile enum interv_states s_interv = INACTIVE;
+volatile enum interv_states interval_status = INACTIVE;
 
 //2 bytes occupied by each int
 //eeprom addresses
@@ -59,26 +66,31 @@ void IRAM_ATTR timer0_ISR() {
 
 void IRAM_ATTR timer1_ISR() {
   //intervalometer ISR
-  if (s_interv == ACTIVE) {
-    num_exp--;
-    if (num_exp % 3 == 0)  //once in every 3 images
-    {
-      s_interv = DITHER;
-      digitalWrite(INTERV_PIN, LOW);  //stop capture
-      timerStop(timer1);              //pause the timer, wait for dither to finish in main loop
-    } else if (num_exp == 0) {
-      disableIntervalometer();
-      num_exp = 0;
-      len_exp = 0;
-    } else {
-      timerWrite(timer1, exposure_delay);
-      digitalWrite(INTERV_PIN, LOW);
-      s_interv = DELAY;
-    }
-  } else if (s_interv == DELAY) {
-    timerWrite(timer1, 0);
-    digitalWrite(INTERV_PIN, HIGH);
-    s_interv = ACTIVE;
+  switch (interval_status) {
+    case ACTIVE:
+      num_exp--;
+      if (num_exp == 0) {
+        // no more images to capture, stop
+        disableIntervalometer();
+        num_exp = 0;
+        len_exp = 0;
+      } else if (num_exp % 3 == 0 && dither_on) {
+        // user has active dithering and this is %3 image, stop capturing and run dither routine
+        interval_status = DITHER;
+        stopCapture();
+        timerStop(timer1);  //pause the timer, wait for dither to finish in main loop
+      } else {
+        // run normally
+        timerWrite(timer1, exposure_delay);
+        stopCapture();
+        interval_status = DELAY;
+      }
+      break;
+    case DELAY:
+      timerWrite(timer1, 0);
+      startCapture();
+      interval_status = ACTIVE;
+      break;
   }
 }
 
@@ -362,13 +374,13 @@ void handleOn() {
   direction = server.arg("direction").toInt();
   s_sidereal_active = true;
   timerAlarmEnable(timer0);
-  server.send(200, "text/plain", "Tracking ON");
+  server.send(200, "text/plain", tracking_on);
 }
 
 void handleOff() {
   s_sidereal_active = false;
   timerAlarmDisable(timer0);
-  server.send(200, "text/plain", "Tracking OFF");
+  server.send(200, "text/plain", tracking_off);
 }
 
 void handleLeft() {
@@ -392,7 +404,7 @@ void handleRight() {
 }
 
 void handleStartCapture() {
-  if (s_interv == INACTIVE) {
+  if (interval_status == INACTIVE) {
     len_exp = server.arg("exposure").toInt();
     num_exp = server.arg("numExposures").toInt();
     dither_on = server.arg("ditherEnabled").toInt();
@@ -412,7 +424,7 @@ void handleStartCapture() {
     Serial.println("steps per 10px: ");
     Serial.println(steps_per_10pixels);
 
-    s_interv = ACTIVE;
+    interval_status = ACTIVE;
     exposure_delay = ((len_exp - 3) * 2000);  // 3 sec delay
     initIntervalometer();
     server.send(200, "text/plain", "Capture ON");
@@ -422,24 +434,33 @@ void handleStartCapture() {
 }
 
 void handleAbortCapture() {
-  if (s_interv == INACTIVE) {
+  if (interval_status == INACTIVE) {
     server.send(200, "text/plain", "Capture Already OFF");
   } else {
     disableIntervalometer();
     num_exp = 0;
     len_exp = 0;
-    s_interv = INACTIVE;
+    interval_status = INACTIVE;
     server.send(200, "text/plain", "Capture OFF");
   }
 }
 
 void handleStatusRequest() {
-  if (s_interv != INACTIVE) {
+  if (interval_status != INACTIVE) {
     char status[60];
     sprintf(status, "%d Captures Remaining...", num_exp);
     server.send(200, "text/plain", status);
-  } else
+  } else if (s_sidereal_active) {
+    server.send(200, "text/plain", tracking_on);
+  } else {
     server.send(204, "text/plain", "dummy");
+  }
+
+  // TODO add detection for capturing
+}
+
+void handleVersion() {
+  server.send(200, "text/plain", (String)firmware_version);
 }
 
 void writeEEPROM(int address, int value) {
@@ -512,17 +533,24 @@ void initIntervalometer() {
   timerAttachInterrupt(timer1, &timer1_ISR, true);
   timerAlarmWrite(timer1, (len_exp * 2000), true);  //2000 because prescaler cant be more than 16bit, = 1sec ISR freq
   timerAlarmEnable(timer1);
-  digitalWrite(INTERV_PIN, HIGH);  // start the first capture
+  startCapture();
 }
 void disableIntervalometer() {
-  digitalWrite(INTERV_PIN, LOW);
+  stopCapture();
   timerAlarmDisable(timer1);
   timerDetachInterrupt(timer1);
   timerEnd(timer1);
 }
 
-void ditherRoutine() {
+void stopCapture() {
+  digitalWrite(INTERV_PIN, LOW);
+}
 
+void startCapture() {
+  digitalWrite(INTERV_PIN, HIGH);
+}
+
+void ditherRoutine() {
   int i = 0, j = 0;
   timerAlarmDisable(timer0);
   digitalWrite(AXIS1_DIR, random(2));  //dither in a random direction
@@ -593,6 +621,7 @@ void setup() {
   server.on("/start", HTTP_GET, handleStartCapture);
   server.on("/abort", HTTP_GET, handleAbortCapture);
   server.on("/status", HTTP_GET, handleStatusRequest);
+  server.on("/version", HTTP_GET, handleVersion);
 
   // Start the server
   server.begin();
@@ -635,10 +664,10 @@ void loop() {
     pinMode(AXIS1_STEP, OUTPUT);
     initSiderealTracking();
   }
-  if (s_interv == DITHER) {
+  if (interval_status == DITHER) {
     disableIntervalometer();
     ditherRoutine();
-    s_interv = ACTIVE;
+    interval_status = ACTIVE;
     initIntervalometer();
   }
   server.handleClient();
