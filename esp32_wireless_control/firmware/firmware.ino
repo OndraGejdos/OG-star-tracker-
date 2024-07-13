@@ -45,6 +45,9 @@ enum photo_control_state { ACTIVE,
                            INACTIVE };
 volatile enum photo_control_state photo_control_status = INACTIVE;
 
+float direction_left_bias = 0.5, direction_right_bias = 0.5;
+int previous_direction = -1;
+
 //2 bytes occupied by each int
 //eeprom addresses
 #define DITHER_ADDR 1
@@ -148,7 +151,7 @@ void handleStartCapture() {
     if ((exposure_duration == 0 || exposure_count == 0)) {
       server.send(200, MIME_TYPE_TEXT, INVALID_EXPOSURE_VALUES);
       return;
-    } 
+    }
 
     if (dither_enabled && (focal_length == 0 || pixel_size == 0)) {
       server.send(200, MIME_TYPE_TEXT, INVALID_DITHER_VALUES);
@@ -176,7 +179,7 @@ void handleAbortCapture() {
     server.send(200, MIME_TYPE_TEXT, CAPTURE_ALREADY_OFF);
     return;
   }
-  
+
   disableIntervalometer();
   exposure_count = 0;
   exposure_duration = 0;
@@ -191,12 +194,12 @@ void handleStatusRequest() {
     sprintf(status, CAPTURES_REMAINING, exposure_count);
     server.send(200, MIME_TYPE_TEXT, status);
     return;
-  } 
+  }
 
   if (s_sidereal_active) {
     server.send(200, MIME_TYPE_TEXT, TRACKING_ON);
     return;
-  } 
+  }
 
   server.send(204, MIME_TYPE_TEXT, "dummy");
 
@@ -301,10 +304,12 @@ void startCapture() {
 void ditherRoutine() {
   int i = 0, j = 0;
   timerAlarmDisable(timer_sidereal);
-  digitalWrite(AXIS1_DIR, random(2));  //dither in a random direction
+  int random_direction = biased_random_direction(previous_direction);
+  previous_direction = random_direction;
+  digitalWrite(AXIS1_DIR, random_direction);  //dither in a random direction
   delay(500);
   Serial.println("Dither rndm direction:");
-  Serial.println(random(2));
+  Serial.println(random_direction);
 
   for (i = 0; i < dither_intensity; i++) {
     for (j = 0; j < steps_per_10pixels; j++) {
@@ -314,7 +319,7 @@ void ditherRoutine() {
       delay(10);
     }
   }
-  
+
   delay(1000);
   initSiderealTracking();
   delay(3000);  //settling time after dither
@@ -421,4 +426,26 @@ void loop() {
   }
   server.handleClient();
   dnsServer.processNextRequest();
+}
+
+// when tracker moves left, next time its 5% higher chance tracked will move right
+// with this tracker should keep in the middle in average
+int biased_random_direction(int previous_direction) {
+  // Adjust probabilities based on previous selection
+  if (previous_direction == 0) {
+    direction_left_bias = 0.45;   // Lower probability for 0
+    direction_right_bias = 0.55;  // Higher probability for 1
+  }
+  if (previous_direction == 1) {
+    direction_left_bias = 0.55;   // Higher probability for 0
+    direction_right_bias = 0.45;  // Lower probability for 1
+  }
+
+  float rand_val = random(100) / 100.0; // random number between 0.00 and 0.99
+
+  if (rand_val < direction_left_bias) {
+    return 0;
+  } else {
+    return 1;
+  }
 }
