@@ -6,6 +6,7 @@
 #include <EEPROM.h>
 #include "config.h"
 #include "strings.h"
+#include "pitches.h"
 
 // try to update every time there is breaking change
 const int firmware_version = 2;
@@ -75,6 +76,7 @@ void IRAM_ATTR timer_interval_ISR() {
         exposure_count = 0;
         exposure_duration = 0;
         s_capturing = false;
+        play_capture_end();
       } else if (exposure_count % 3 == 0 && dither_enabled) {
         // user has active dithering and this is %3 image, stop capturing and run dither routine
         photo_control_status = DITHER;
@@ -112,12 +114,14 @@ void handleOn() {
   s_sidereal_active = true;
   timerAlarmEnable(timer_sidereal);
   server.send(200, MIME_TYPE_TEXT, TRACKING_ON);
+  play_positive_command();
 }
 
 void handleOff() {
   s_sidereal_active = false;
   timerAlarmDisable(timer_sidereal);
   server.send(200, MIME_TYPE_TEXT, TRACKING_OFF);
+  play_negative_command();
 }
 
 void handleLeft() {
@@ -128,6 +132,7 @@ void handleLeft() {
   }
   old_millis = millis();
   server.send(200, MIME_TYPE_TEXT, SLEWING);
+  play_positive_command();
 }
 
 void handleRight() {
@@ -138,6 +143,7 @@ void handleRight() {
     s_slew_active = true;
   }
   server.send(200, MIME_TYPE_TEXT, SLEWING);
+  play_positive_command();
 }
 
 void handleStartCapture() {
@@ -147,6 +153,8 @@ void handleStartCapture() {
     dither_enabled = server.arg(DITHER_ENABLED).toInt();
     focal_length = server.arg(FOCAL_LENGTH).toInt();
     pixel_size = server.arg(PIXEL_SIZE).toInt();
+
+    play_positive_command();
 
     if ((exposure_duration == 0 || exposure_count == 0)) {
       server.send(200, MIME_TYPE_TEXT, INVALID_EXPOSURE_VALUES);
@@ -175,6 +183,8 @@ void handleStartCapture() {
 }
 
 void handleAbortCapture() {
+  play_negative_command();
+
   if (photo_control_status == INACTIVE) {
     server.send(200, MIME_TYPE_TEXT, CAPTURE_ALREADY_OFF);
     return;
@@ -258,6 +268,10 @@ void setMicrostep(int microstep) {
       break;
   }
 }
+void initBuzzer() {
+  ledcSetup(0, 0, 8);
+  ledcAttachPin(BUZZER, 0);
+}
 
 void initSlew(int dir) {
   timerAlarmDisable(timer_sidereal);
@@ -329,6 +343,7 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(512);  //SIZE = 6 bytes, 2 bytes for each variable
   //fetch values from EEPROM
+  initBuzzer();
   dither_enabled = readEEPROM(DITHER_ADDR);
   focal_length = readEEPROM(FOCAL_LEN_ADDR);
   pixel_size = readEEPROM(PIXEL_SIZE_ADDR);
@@ -379,6 +394,7 @@ void setup() {
 
   // Start the server
   server.begin();
+  play_welcome();
 
 #ifdef AP
   Serial.println(WiFi.softAPIP());
@@ -447,5 +463,57 @@ int biased_random_direction(int previous_direction) {
     return 0;
   } else {
     return 1;
+  }
+}
+
+void play_welcome() {
+  int melody[] = { NOTE_C4, NOTE_E4, NOTE_C5 };
+  int noteDurations[] = { 4, 4, 3 };
+
+  for (int thisNote = 0; thisNote < sizeof(melody) / sizeof(int); thisNote++) {
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(BUZZER, melody[thisNote], noteDuration);
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER);
+  }
+}
+
+void play_positive_command() {
+  int melody[] = { NOTE_C4, NOTE_C4, NOTE_C5 };
+  int noteDurations[] = { 8, 8, 4 };
+
+  for (int thisNote = 0; thisNote < sizeof(melody) / sizeof(int); thisNote++) {
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(BUZZER, melody[thisNote], noteDuration);
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER);
+  }
+}
+
+void play_negative_command() {
+  int melody[] = { NOTE_C5, NOTE_C5, NOTE_C4 };
+  int noteDurations[] = { 8, 8, 4 };
+
+  for (int thisNote = 0; thisNote < sizeof(melody) / sizeof(int); thisNote++) {
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(BUZZER, melody[thisNote], noteDuration);
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER);
+  }
+}
+
+void play_capture_end() {
+  int melody[] = { NOTE_G4, NOTE_E4, NOTE_C4, NOTE_F4, NOTE_D4, NOTE_B3 };
+  int noteDurations[] = { 6, 6, 3, 6, 6, 3 };
+
+  for (int thisNote = 0; thisNote < sizeof(melody) / sizeof(int); thisNote++) {
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(BUZZER, melody[thisNote], noteDuration);
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER);
   }
 }

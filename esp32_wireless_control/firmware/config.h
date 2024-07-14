@@ -28,5 +28,7 @@ const uint32_t SLEW_SPEED = 200;    //tweak this value if you want to increase/d
 #define MS1           23
 #define MS2           22
 #define EN12_n        17
+// buzzer
+#define BUZZER        32
 
 #endif
